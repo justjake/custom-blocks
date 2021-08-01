@@ -3,7 +3,7 @@ CREATE TYPE "BlockAction" AS ENUM ('Read', 'WriteState', 'Write');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" UUID NOT NULL REFERENCES auth.users,
+    "id" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
