@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "psql": ". .env && psql \"$DATABASE_URL\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^1.21.0",

@@ -1,11 +1,49 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model User {
+  id          String             @id @db.Uuid
+  tokens      NotionOauthToken[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  CustomBlock CustomBlock[]
+}
+
+model NotionOauthToken {
+  // Our stuff
+  id             String   @id @db.Uuid
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @db.Uuid
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  // Notion's stuff
+  access_token   String
+  workspace_name String
+  workspace_icon String
+  bot_id         String
+}
+
+model CustomBlock {
+  id              String       @id @db.Uuid
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdBy       User         @relation(fields: [createdByUserId], references: [id])
+  createdByUserId String       @db.Uuid
+  // Editing
+  State           Bytes
+  // Permissions
+  publicId        String       @default(uuid()) @db.Uuid
+  publicAccess    BlockAction?
+}
+
+enum BlockAction {
+  Read
+  WriteState
+  Write
 }

@@ -1,0 +1,78 @@
+// From the auth schema. Can't use it:
+// https://github.com/prisma/prisma/issues/1122
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model audit_log_entries {
+  instance_id String?   @db.Uuid
+  id          String    @id @db.Uuid
+  payload     Json?     @db.Json
+  created_at  DateTime? @db.Timestamptz(6)
+
+  @@index([instance_id], name: "audit_logs_instance_id_idx")
+}
+
+model instances {
+  id              String    @id @db.Uuid
+  uuid            String?   @db.Uuid
+  raw_base_config String?
+  created_at      DateTime? @db.Timestamptz(6)
+  updated_at      DateTime? @db.Timestamptz(6)
+}
+
+model refresh_tokens {
+  instance_id String?   @db.Uuid
+  id          BigInt    @id @default(dbgenerated("nextval('refresh_tokens_id_seq'::regclass)"))
+  token       String?   @db.VarChar(255)
+  user_id     String?   @db.VarChar(255)
+  revoked     Boolean?
+  created_at  DateTime? @db.Timestamptz(6)
+  updated_at  DateTime? @db.Timestamptz(6)
+
+  @@index([instance_id], name: "refresh_tokens_instance_id_idx")
+  @@index([instance_id, user_id], name: "refresh_tokens_instance_id_user_id_idx")
+  @@index([token], name: "refresh_tokens_token_idx")
+}
+
+model schema_migrations {
+  version String @id @db.VarChar(255)
+}
+
+model users {
+  instance_id          String?   @db.Uuid
+  id                   String    @id @db.Uuid
+  aud                  String?   @db.VarChar(255)
+  role                 String?   @db.VarChar(255)
+  email                String?   @unique @db.VarChar(255)
+  encrypted_password   String?   @db.VarChar(255)
+  email_confirmed_at   DateTime? @db.Timestamptz(6)
+  invited_at           DateTime? @db.Timestamptz(6)
+  confirmation_token   String?   @db.VarChar(255)
+  confirmation_sent_at DateTime? @db.Timestamptz(6)
+  recovery_token       String?   @db.VarChar(255)
+  recovery_sent_at     DateTime? @db.Timestamptz(6)
+  email_change_token   String?   @db.VarChar(255)
+  email_change         String?   @db.VarChar(255)
+  email_change_sent_at DateTime? @db.Timestamptz(6)
+  last_sign_in_at      DateTime? @db.Timestamptz(6)
+  raw_app_meta_data    Json?
+  raw_user_meta_data   Json?
+  is_super_admin       Boolean?
+  created_at           DateTime? @db.Timestamptz(6)
+  updated_at           DateTime? @db.Timestamptz(6)
+  phone                String?   @unique @db.VarChar(15)
+  phone_confirmed_at   DateTime? @db.Timestamptz(6)
+  phone_change         String?   @default("") @db.VarChar(15)
+  phone_change_token   String?   @default("") @db.VarChar(255)
+  phone_change_sent_at DateTime? @db.Timestamptz(6)
+  confirmed_at         DateTime? @db.Timestamptz(6)
+
+  @@index([instance_id, email], name: "users_instance_id_email_idx")
+  @@index([instance_id], name: "users_instance_id_idx")
+}
