@@ -1,5 +1,7 @@
 import { GetUserResponse } from "@notionhq/client/build/src/api-endpoints";
 import NextAuth, { Profile } from "next-auth";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "../../../lib/db";
 import {
   NOTION_OAUTH_CLIENT_ID,
   NOTION_OAUTH_CLIENT_SECRET,
@@ -44,8 +46,7 @@ export default NextAuth({
     },
   ],
 
-  // A database is optional, but required to persist accounts in a database
-  database: PGBOUNCER_DATABASE_URL.string(),
+  adapter: PrismaAdapter(prisma),
 });
 
 type NotionBotOwner =
