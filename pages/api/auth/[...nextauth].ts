@@ -6,6 +6,7 @@ import {
   NOTION_OAUTH_CLIENT_ID,
   NOTION_OAUTH_CLIENT_SECRET,
 } from "../../../lib/config";
+import { NotionProvider } from "../../../packages/next-auth-notion";
 
 declare module "next-auth" {
   interface Session {
@@ -16,36 +17,10 @@ declare module "next-auth" {
 export default NextAuth({
   // Configure one or more authentication providers
   providers: [
-    {
-      // Seems OK.
-      id: "notion",
-      name: "Notion",
-      type: "oauth",
-      version: "2.0",
-      params: {
-        grant_type: "authorization_code",
-      },
-      accessTokenUrl: "https://api.notion.com/v1/oauth/token",
-      authorizationUrl:
-        "https://api.notion.com/v1/oauth/authorize?response_type=code&owner=user",
+    NotionProvider({
       clientId: NOTION_OAUTH_CLIENT_ID.string(),
       clientSecret: NOTION_OAUTH_CLIENT_SECRET.string(),
-      headers: {
-        "Notion-Version": "2021-08-16",
-        Authorization: `Basic ${base64(
-          NOTION_OAUTH_CLIENT_ID.string() +
-            ":" +
-            NOTION_OAUTH_CLIENT_SECRET.string()
-        )}`,
-      },
-      scope: "",
-
-      // Fetch user information, and produce an "account" per workspace.
-      profileUrl: "https://api.notion.com/v1/users/me",
-      async profile(profile, tokens) {
-        return userProfile(profile as any as GetUserResponse);
-      },
-    },
+    }),
   ],
 
   adapter: {
@@ -139,10 +114,6 @@ export default NextAuth({
       }
       return true;
     },
-    async redirect(url, baseUrl) {
-      // console.log("NextAuth: redirect callback", url, baseUrl);
-      return baseUrl;
-    },
     async session(session, user) {
       // console.log("NextAuth: session callback", session, user);
       session.userId = user.id as string;
@@ -164,41 +135,4 @@ interface NotionAccessTokenResponse {
   workspace_name: string;
   workspace_icon: string | undefined;
   workspace_id: string | undefined;
-}
-
-type Person = Extract<GetUserResponse, { type: "person" }>;
-
-function getUserPerson(user: GetUserResponse): Person {
-  if (user.type === "bot") {
-    const bot = user.bot;
-
-    if (bot.owner.type === "workspace") {
-      throw new Error("Workspace bots dont have a user profile");
-    }
-
-    if (!("type" in bot.owner.user)) {
-      throw new Error("Owner user object has no type field");
-    }
-
-    return getUserPerson(bot.owner.user);
-  }
-
-  return user;
-}
-
-function userProfile(user: GetUserResponse): Profile & { id: string } {
-  const person = getUserPerson(user);
-
-  return {
-    // IMPORTANT: should `user.id` here is the bot's ID. This gives us a unique
-    // NextAuth account per workspace.
-    id: user.id,
-    name: person.name || undefined,
-    email: person.person.email,
-    image: person.avatar_url || undefined,
-  };
-}
-
-function base64(string: string): string {
-  return Buffer.from(string).toString("base64");
 }

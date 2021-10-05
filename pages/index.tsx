@@ -2,8 +2,13 @@ import { getSession, signIn, signOut } from "next-auth/client";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { prisma } from "../lib/db";
 import { CSSProperties } from "react";
+import { signInWithPopup } from "../packages/next-auth-popup";
 
-const signInWithNotion = () => signIn("notion");
+const signInWithNotion = () =>
+  signInWithPopup({
+    provider: "notion",
+    popupUrl: "/auth/popup",
+  });
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
