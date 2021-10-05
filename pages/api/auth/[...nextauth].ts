@@ -2,7 +2,6 @@ import { GetUserResponse } from "@notionhq/client/build/src/api-endpoints";
 import NextAuth, { Account, Profile, Session } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "../../../lib/db";
-import { Account as PrismaAccount } from "@prisma/client";
 import {
   NOTION_OAUTH_CLIENT_ID,
   NOTION_OAUTH_CLIENT_SECRET,

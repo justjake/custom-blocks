@@ -1,42 +1,35 @@
-import Head from "next/head";
-import Image from "next/image";
-import { getSession, signIn, signOut, useSession } from "next-auth/client";
-
-import styles from "../styles/Home.module.css";
+import { getSession, signIn, signOut } from "next-auth/client";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { prisma } from "../lib/db";
 import { CSSProperties } from "react";
+
+const signInWithNotion = () => signIn("notion");
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getSession(context);
-  if (session) {
-    const accounts = await prisma.account.findMany({
-      select: {
-        id: true,
-        workspaceIcon: true,
-        workspaceId: true,
-        workspaceName: true,
-        providerAccountId: true,
-        providerType: true,
-        providerId: true,
-      },
-      where: {
-        userId: session.userId,
-      },
-    });
-
-    return {
-      props: {
-        accounts,
-      },
-    };
-  }
+  const accounts = session
+    ? await prisma.account.findMany({
+        select: {
+          id: true,
+          workspaceIcon: true,
+          workspaceId: true,
+          workspaceName: true,
+          providerAccountId: true,
+          providerType: true,
+          providerId: true,
+        },
+        where: {
+          userId: session.userId,
+        },
+      })
+    : [];
 
   return {
     props: {
-      accounts: [],
+      session,
+      accounts,
     },
   };
 };
@@ -49,7 +42,7 @@ function NotionIcon(props: {
   const { src, width } = props;
   const title = props.title || "unknown icon";
   const style: CSSProperties = {
-    boxShadow: "0x 2px 8px rgba(15, 15, 15, 0.1)",
+    boxShadow: "0x 2px rgba(15, 15, 15, 0.1)",
     display: "inline-block",
     width: width,
     height: width,
@@ -71,16 +64,14 @@ function NotionIcon(props: {
 type HomeProps = InferGetServerSidePropsType<typeof getServerSideProps>;
 
 export default function Home(props: HomeProps) {
-  const [session, loading] = useSession();
-
-  const { accounts } = props;
+  const { session, accounts } = props;
 
   return (
     <>
       {!session && (
         <>
           Not signed in <br />
-          <button onClick={() => signIn()}>Sign in</button>
+          <button onClick={signInWithNotion}>Sign in with Notion</button>
         </>
       )}
       {session && (
@@ -113,7 +104,7 @@ export default function Home(props: HomeProps) {
             })}
           </div>
           <div>
-            <button onClick={() => signIn()}>Add or update workspace</button>
+            <button onClick={signInWithNotion}>Add or update workspace</button>
           </div>
         </>
       )}
