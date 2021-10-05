@@ -42,7 +42,7 @@ function NotionIcon(props: {
   const { src, width } = props;
   const title = props.title || "unknown icon";
   const style: CSSProperties = {
-    boxShadow: "0x 2px rgba(15, 15, 15, 0.1)",
+    boxShadow: "0x 2px 8px rgba(15, 15, 15, 0.1)",
     display: "inline-block",
     width: width,
     height: width,
